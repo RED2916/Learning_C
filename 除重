@@ -1,0 +1,85 @@
+#include <iostream>
+#include <stdio.h>
+#include <malloc.h>
+
+using namespace std;
+
+typedef struct node//链表节点
+{
+	char data ;
+	struct node* next ;
+}LNode;
+
+typedef struct//用于记录结果的结构体
+{
+	char* data ;
+	int r_sum ;
+}outcome;
+
+LNode* init_L(int n, char c_array[]);//建立链表，录入数据
+outcome delete_repeats(int size, LNode* head);//数据处理函数
+
+int main(void)
+{
+	outcome output;
+	LNode* head;
+	int n;
+	char c_array[20] = { 'A',NULL,'A','B','C','D','F','C' };
+	head=init_L( 8, c_array );//利用链表记录数据
+	output = delete_repeats(5, head);
+	cout << "the number of repeats:" << output.r_sum << endl << "the outcome：" << output.data << endl ;
+	system("pause");
+	return 1;
+}
+
+LNode* init_L( int n,char c_array[] )//建立链表，录入数据
+{
+	int i;
+	LNode *head, *node, *end;
+	head = ( LNode* )malloc(sizeof( LNode ));
+	end = head;
+	for (i = 0; i < n ; i++)
+	{
+		if (c_array[i] != NULL)
+		{
+			node = ( LNode* )malloc( sizeof( LNode ) );
+			node->data = c_array[i] ;
+			end->next = node ;
+			end = node ;
+		}
+	}
+	end->next = NULL;
+	return head;
+}
+
+outcome delete_repeats(int size, LNode* head)
+{
+	outcome output;
+	int judge , number=0, i ;
+	char* target;
+	LNode *p;
+	output.r_sum = 0;
+	target = new char[ size+1 ];
+	p = head;
+	while ( p )
+	{
+		judge = 0;
+		for (i = 0; i < size; i++)//查找整个字符数组判断是否已经存在相同字符
+		{
+			if (p->data == target[i])
+			{
+				judge = 1;
+				output.r_sum++ ;
+			}
+		}
+		if (judge == 0)//若无相同的的数据，则录入
+		{
+			target[number] = p->data ;
+			number++;
+		}
+		p = p->next;
+	}
+	target[size + 1] = '\0';
+	output.data = target;
+	return output;
+}
