@@ -1,0 +1,91 @@
+// 2.cpp : 定义控制台应用程序的入口点。
+//
+
+#include "stdafx.h"
+#include <iostream>
+
+using namespace std;
+
+
+typedef struct {
+	int hour;
+	int min;
+}time_24;
+
+typedef struct {
+	int hour;
+	int min;
+	char part[3];//利用char类型记录时上午或下午
+}time_12;
+
+time_24 input( void );//输入
+time_12 cv_12(time_24 t);//转换
+
+int main( void )
+{
+	time_24 t1 ;
+	time_12 t2 ;
+	int judge;
+	while( 1 )
+	{
+		//fflush(stdin);
+		//cin.sync( );无法起作用
+		t1=input();//输入
+		t2=cv_12(t1);
+		cout<< "THE TIME:" << t2.hour<< t2.min << t2.part << endl ;
+		cout << "Would you like to continue ?( 0:exit )"<< endl ;
+		cin >> judge ;
+		if( judge == 0 )
+		{
+			break;
+		}
+		/*else
+		{
+			//fflush(stdin); //清空输入缓存区，防止因输入错误而持续有数据留于缓存区陷入死循环,此处存疑！无法使用！
+			//cin.sync();//清空输入缓存区，防止因输入错误而持续有数据留于缓存区陷入死循环,此处存疑！无法使用！
+		}*/
+		//cin.sync( );
+	}
+	return 0;
+}
+
+time_24 input( void )//输入函数，并对函数进行判断
+{
+	time_24 t;
+	//fflush(stdin);
+	cout << "Please input your time_24:" << endl ;
+	cout << "hour:";
+	cin >> t.hour;
+	cout << "min:";
+	cin >> t.min ;
+	if( t.hour<0 || t.hour>=24 || t.min<0 || t.min>60 )
+	{
+		cout << "You input wrong time! Please input again!";
+		t=input();
+	}
+	else
+	{
+		return t;
+	}
+}
+
+time_12 cv_12( time_24 t )//转换为12时制
+{
+	time_12 t_12;
+	if( t.hour > 12 )
+	{
+		t_12.hour=t.hour-12 ;
+		t_12.part[0]='P' ;
+	}
+	else
+	{
+		t_12.hour = t.hour ;
+		t_12.part[0]='A' ;
+	}
+	t_12.min = t.min ;
+	t_12.part[1]= 'M' ;
+	t_12.part[2]= '\0' ;//必须！
+	return t_12 ;
+}
+
+
