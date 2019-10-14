@@ -81,5 +81,5 @@ outcome delete_repeats(int size, LNode* head)
 	}
 	target[size + 1] = '\0';
 	output.data = target;
-	return output;
+	return output；
 }
