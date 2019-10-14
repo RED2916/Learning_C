@@ -4,17 +4,17 @@
 
 using namespace std;
 
-typedef struct node//链表节点
+typedef struct LNode//链表节点
 {
 	char data ;
-	struct node* next ;
-}LNode;
+	struct LNode* next ;
+};
 
-typedef struct//用于记录结果的结构体
+typedef struct outcome//用于记录结果的结构体
 {
 	char* data ;
 	int r_sum ;
-}outcome;
+};
 
 LNode* init_L(int n, char c_array[]);//建立链表，录入数据
 outcome delete_repeats(int size, LNode* head);//数据处理函数
