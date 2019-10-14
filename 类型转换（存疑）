@@ -1,0 +1,157 @@
+// 1.cpp : 定义控制台应用程序的入口点。
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include <string>
+using namespace std;
+
+int choose_type( string type );
+double my_abs( double number );
+long my_abs( long number );
+int my_abs( int number );
+float my_abs( float number );
+
+void main()
+{
+	string type;
+	double number_d;
+	long number_l;
+	int number_i;
+	float number_f;
+	int judge,judge_1;
+	while( 1 )
+	{
+		cin.sync();//疑似未起作用
+		cout << "Please input the type of number which you would like to input: ";//让用户选择输入数据的类型
+		cin >> type;
+		judge = choose_type( type );
+		if( judge == 0)//判断是否输入正确
+		{
+			cout << "Please input right word!" << endl ;
+			continue;
+		}
+		cout << "Please input the number:";
+		if( judge == 1 )//根据用户输入调整数据类型
+		{
+			cin >> number_d;
+			/*if( typeid( number_d ) == typeid( double ) )
+			{
+				cout << "Please input right number! " << endl ;
+				continue;
+			}*/
+			cout << "output:" << my_abs(number_d) << endl ;
+		}
+		else if( judge == 2 )
+		{
+			cin >> number_l;
+			/*if( typeid( number_l ) == typeid( long ) )
+			{
+				cout << "Please input right number! " << endl ;
+				continue;
+			}*/
+			cout << "output:" << my_abs(number_l) << endl ;
+		}
+		else if( judge == 3 )
+		{
+			cin >> number_i;
+			/*if( typeid( number_i ) == typeid( int ) )
+			{
+				cout << "Please input right number! " << endl ;
+				continue;
+			}*/
+			cout << "output:" << my_abs(number_i) << endl ;
+		}
+		else if( judge == 4 )
+		{
+			cin >> number_f;
+			/*if( number_d != 0 && typeid( number_f ) == typeid( float ) )
+			{
+				cout << "Please input right number! " << endl ;
+				continue;
+			}*/
+			cout << "output:" << my_abs(number_f) << endl ;
+		}
+		cin.sync();//疑似未起作用
+		cout << "Continue?(0 no):";
+		cin >> judge_1;
+		if( judge_1 == 0)
+		{
+			break;
+		}
+	}
+}
+
+int choose_type( string type )
+{
+	int judge;
+	if( type == "double" )
+	{
+		judge = 1 ;
+	}
+	else if( type == "long" )
+	{
+		judge = 2 ;
+	}
+	else if( type == "int" )
+	{
+		judge = 3 ;
+	}
+	else if( type == "float" )
+	{
+		judge = 4 ;
+	}
+	else
+	{
+		judge = 0 ;
+	}
+	return judge;
+}
+
+double my_abs( double number )
+{
+	if( number >= 0)
+	{
+		return number;
+	}
+	else
+	{
+		return -number;
+	}
+}
+
+long my_abs( long number )
+{
+	if( number >= 0)
+	{
+		return number;
+	}
+	else
+	{
+		return -number;
+	}
+}
+
+int my_abs( int number )
+{
+	if( number >= 0)
+	{
+		return number;
+	}
+	else
+	{
+		return -number;
+	}
+}
+
+float my_abs( float number )
+{
+	if( number >= 0)
+	{
+		return number;
+	}
+	else
+	{
+		return -number;
+	}
+}
