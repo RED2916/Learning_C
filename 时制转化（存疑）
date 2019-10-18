@@ -28,7 +28,7 @@ int main( void )
 	int judge;
 	while( 1 )
 	{
-		//fflush(stdin);
+		//fflush(stdin);无法作用，对scanf作用明显
 		//cin.sync( );无法起作用
 		t1=input();//输入
 		t2=cv_12(t1);
