@@ -1,0 +1,137 @@
+// 1.cpp : 定义控制台应用程序的入口点。
+//
+
+#include "stdafx.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
+
+typedef struct{
+	int *base;
+	int *top;
+	int stacksize;
+}sqstack;
+
+
+#define STACK_INIT_SIZE 100
+#define STACKINCREMENT 10
+//不可有分号！
+int init_st( sqstack *S );
+int Push( sqstack *S, int target ) ;
+int Pop( sqstack* S, int* target );
+int gettop( sqstack S, int* target );
+
+int main( void )
+{
+	sqstack *S;
+	S=( sqstack* )malloc( sizeof( sqstack ) );//初始化？
+	int input,choose,judge=0,output;
+	init_st( S );
+	while( 1 )
+	{
+		printf( "请输入内容（-1结束）：\n" );
+		scanf( "%d",&input );
+		while( input != -1 )
+		{
+			Push( S,input );
+			scanf( "%d",&input );
+		}
+		printf( "输入结束！\n" );
+		while( 1 )
+		{
+			judge=0; //初始化
+			printf( "请选择下一步行动：1.取栈顶元素 2.全体出栈\n" );
+			scanf( "%d",&choose );
+			switch( choose )
+			{
+			case 1:
+				judge=gettop( *S,&output );
+				if( judge == -1 )
+				{
+					printf( "栈空！" );
+				}
+				else
+				{
+					printf( "栈顶元素为：%d\n",output );
+				}
+				break;
+			case 2:
+				while( 1 )
+				{
+					judge=Pop( S,&output );
+					if( judge == -1 )
+					{
+						printf( "栈已空。\n" );
+						break;
+					}
+					else
+					{
+						printf( "栈顶元素为：%d\n",output );
+					}
+				}
+				break;
+			}
+			printf( "是否继续？（0 退出）\n" );
+			scanf( "%d",&choose );
+			if( choose == 0 )
+			{
+				break;
+			}
+		}
+		printf( "是否重新开始？（0 结束）\n" );
+		scanf( "%d",&choose );
+		if( choose == 0 )
+		{
+			break;
+		}
+	}
+	return 0;
+}
+
+int init_st( sqstack *S )
+{
+	S->base=( int* )malloc( sizeof( int )*STACK_INIT_SIZE );//分配内存空间（？）
+	if( !S->base )
+	{
+		exit( 1 );
+	}
+	S->top=S->base;
+	S->stacksize=STACK_INIT_SIZE;
+	return 1;
+}
+
+int Push( sqstack *S, int target )//入栈
+{
+	if( (S->top-S->base)>=S->stacksize )//重新分配内存空间
+	{
+		S->base=( int* )realloc( S->base,( STACK_INIT_SIZE+STACKINCREMENT )* sizeof( int ));
+		if( !S->base )
+		{
+			exit( 1 );
+		}
+		S->top=S->base+S->stacksize;
+		S->stacksize+= STACKINCREMENT;
+	}
+	*(S->top++)=target;
+	return 1;
+}
+
+int Pop( sqstack* S, int* target )//出栈
+{
+	if( (S->top)==(S->base) )//判断栈是否为空
+	{
+		return -1;
+	}
+	*target = *( --S->top ) ;
+	return 1;
+}
+
+int gettop( sqstack S, int* target )//取栈顶元素
+{
+	if( S.top==S.base )//判断栈是否为空
+	{
+		return -1;
+	}
+	*target = *( S.top-1 );
+	return 1;
+}
