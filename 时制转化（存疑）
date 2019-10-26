@@ -32,7 +32,7 @@ int main( void )
 		//cin.sync( );无法起作用
 		t1=input();//输入
 		t2=cv_12(t1);
-		cout<< "THE TIME:" << t2.hour<< t2.min << t2.part << endl ;
+		cout<< "THE TIME:" << t2.hour<< ':'<< t2.min << t2.part << endl ;
 		cout << "Would you like to continue ?( 0:exit )"<< endl ;
 		cin >> judge ;
 		if( judge == 0 )
