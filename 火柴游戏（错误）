@@ -1,0 +1,96 @@
+// 2019.10.26.cpp : 定义控制台应用程序的入口点。
+//
+
+#include "stdafx.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <malloc.h>
+
+int deal_data( int* data,int* output,int n );
+int* bubble_order( const int* data,int n );
+
+int main(void)
+{
+	int i,j,n,temp,step=0,output2;
+	int *data1,*data2,*data3,*data4;
+	scanf("%d",&n);
+	data1=( int* )malloc( sizeof( int )* n );//创建数组
+	data2=( int* )malloc( sizeof( int )* n );
+	data3=( int* )malloc( sizeof( int )* n );
+	data4=( int* )malloc( sizeof( int )* n );
+	for( i=0;i<n;i++ )//得到数据
+	{
+		scanf("%d",( data1+i ));
+	}
+	for( i=0;i<n;i++ )
+	{
+		scanf("%d",( data2+i ));
+	}
+	deal_data( data1,data3,n );
+	deal_data( data2,data4,n );
+	for( i=0;i<n;i++ )
+	{
+		if( *(data3+i) != *(data4+i) )//根据排序数组进行交换
+		{
+			for( j=0;j<n;j++ )
+			{
+				if( *(data4+j) == *(data3+i) )
+				{
+					temp=*(data4+j);
+					*(data4+j)=*(data4+i);
+					*(data4+i)=temp;
+					step++;
+				}
+			}
+		}
+	}
+	printf( "%d\n",step%99999997 );//结果过大取余
+	system( "pause" );
+	return 0;
+}
+
+int deal_data( int* data,int* output,int n )//得到排序数组
+{
+	int i,j;
+	int *output1;
+	output1=( int* )malloc( sizeof( int )* n );
+	output1=bubble_order( data,n );
+	for( i=0;i<n;i++ )
+	{
+		for( j=0;j<n;j++)
+		{
+			if( *(output1+j)==*(data+i) )
+			{
+				*( output+i )=j;
+			}
+		}
+	}
+	return 1;
+}
+
+int* bubble_order( const int* data,int n )//冒泡排序
+{
+	int i,j,temp;
+	int *output;
+	output=( int* )malloc( sizeof( int )* n );
+	for( i=0;i<n;i++ )
+	{
+		*( output+i) = *( data+i) ;
+	}
+	for( i=0;i<n-1;i++)
+	{
+		for( j=0;j<n-i-1;j++ )
+		{
+			if( *(output+j)>*(output+j+1) )
+			{
+				temp=*(output+j);
+				*(output+j)=*(output+j+1);
+				*(output+j+1)=temp;
+			}
+		}
+	}
+	return output;
+}
+
+
