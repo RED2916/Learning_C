@@ -1,0 +1,38 @@
+#include <iostream>
+
+using namespace std;
+/* run this program using the console pauser or add your own getch, system("pause") or input loop */
+class DayofYear{
+	public:
+		DayofYear();
+		DayofYear( int m, int d);
+		int get_m();
+		int get_d();
+	private:
+		int month;
+		int day; 
+};
+
+/*void不用写！！*/ DayofYear::DayofYear(){
+	month=1;
+	day=1;
+}
+/*DayofYear::DayofYear( int m, int d){
+	month=m;
+	day=d;
+}*/
+DayofYear::DayofYear( int m, int d):day(d),month(m){
+}
+
+int DayofYear::get_m(){
+	return month;
+}
+int DayofYear::get_d(){
+	return day;
+}
+
+int main(void) {
+	DayofYear a1,a2(1,2);
+	cout<< ' '<< a1.get_m()  <<' '<< a1.get_d() <<' '<< a2.get_d() <<' '<< a2.get_m();
+	return 0;
+}
