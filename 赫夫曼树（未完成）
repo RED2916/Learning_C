@@ -1,0 +1,157 @@
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <malloc.h> 
+#include <string.h>
+/* run this program using the console pauser or add your own getch, system("pause") or input loop */
+
+typedef struct{
+	int weight;
+	int parent,lchild,rchild; 
+}HFMTREE;//注意，加入"*"形势可以让结构体可以数组化！
+typedef char** HFMCODING;//无法识别?
+
+int selectmin(HFMTREE* T,int k,int* s1,int* s2 );
+int CreateHNT(int weight[],int n,HFMTREE *T);
+void CodeHFM( HFMCODING *HC, int n, HFMTREE* T);
+void Printf_HFM(int n,HFMCODING HC,int weight[]);
+
+int main( void ) {
+	int weight[5]={2, 8, 7, 6, 5};
+	int n=5;
+	HFMTREE T;
+	HFMCODING T_code;
+	//T_code=( char** )malloc( sizeof(char**) );//此处存疑
+	//T=( HFMTREE* )malloc( sizeof(HFMTREE) );
+	CreateHNT(weight,n,&T);
+	CodeHFM( &T_code,n, &T);
+	Printf_HFM(n,T_code,weight);
+	system("pause");
+	return 0;
+}
+
+int CreateHNT(int weight[],int n,HFMTREE *T)
+{
+	int s1,s2,i,test;
+	HFMTREE *p; 
+	int number_leafs;
+	if(n<=1)
+	{
+		return 0;
+	}
+	number_leafs=2*n-1;
+	T=(HFMTREE *)malloc((number_leafs+1)*sizeof(int));
+	p=T;
+	for( i=1;i<=n;++i)//初始化
+	{
+		(p+i)->weight=*(weight+i-1);//第一个不存储！ 
+		(p+i)->parent=0;
+		(p+i)->lchild=0;
+		(p+i)->rchild=0;
+	}
+	for(i=n+1;i<=number_leafs;++i)//此处与伪代码不同，不再只是继承i，以防出现错误 
+	{
+		(p+i)->weight=0;
+		(p+i)->parent=0;
+		(p+i)->lchild=0;
+		(p+i)->rchild=0;
+	}
+	for(i=n+1;i<=number_leafs;++i)
+	{
+		selectmin(T,i-1,&s1,&s2);
+		(T+s1)->parent=i;//注意!
+		(T+s2)->parent=i;
+		(T+i)->lchild=s1;
+		(T+i)->rchild=s2;
+		(T+i)->weight=(T+s1)->weight+(T+s2)->weight;
+	}
+	test=(T+1)->parent;//赋值完成！ 
+	return 1;
+}
+void CodeHFM( HFMCODING *HC, int n, HFMTREE *T){
+	//char cd[10];
+	//char target[20][10];
+	//char **target;
+	char *cd;
+	int start,i,c,f,test;
+	//target=(char**)malloc( sizeof(char **) );
+	//target=(char**)malloc((n+1)*sizeof(char *));//无法使用
+	//HC=(char**)malloc((n+1)*sizeof(char *));//vs10无法使用！
+	test=(T+1)->parent;//8？？？ 
+	*HC=( HFMCODING )malloc((n+1)*sizeof(char *));//vs10无法使用，devC++可以正常运行 
+	cd=(char *)malloc( n*sizeof( char ) );//无法使用
+	cd[n-1]='\0';//中间的字符如何处理？
+	for( i=1;i<=n;++i)
+	{
+		start=n-1;
+		//for( c=i,f=(T+i)->parent;f!=0;c=f,f=(T+f)->parent)//条件存在问题!无法正常停止 ,c、f值不断交换 
+		c=i;
+		f=(T+i)->parent;//为何不是6？ ？？ 
+		while(f!=0)
+		{
+			if( (T+f)->lchild==c) cd[--start]='0';//此处存在问题，疑似无法访问空指针,devC++可以正常运行 
+			else cd[--start]='1';
+			c=f;
+			f=(T+f)->parent;
+		}
+		//target[i]=(char *)malloc((n-start)*sizeof(char));
+		//HC[i]=(char *)malloc((n-start)*sizeof(char));
+		//strcpy((*HC)[i],cd);//不需要清空未赋值？
+		strcpy((*HC)[i], &cd[start]);
+		//printf("%s\t",/*HC[i]*/target[i]);//打印,验证,此处无法使用
+	}
+	//*HC=*target;
+	free(cd);
+}
+void Printf_HFM(int n,HFMCODING HC,int weight[]){
+	int i;
+	printf("Code:\n");
+	for( i=1;i<=n;i++ )
+	{
+		printf("%d code = %s\n",weight[i-1], HC[i]);
+	}
+}
+
+int selectmin(HFMTREE* T,int k,int* s1,int* s2 )
+{
+	int min,i;
+	for(i=1;i<=k;i++)//初始化 ，找第一个数 //i=1!头不用?错误！其次，注意符号！！！ 
+	{
+		if((T+i)->parent==0)
+		{
+			min=i;
+			break;
+		}
+	}
+	for(i=1;i<=k;i++)//s1,此处i最终过值
+	{
+		if((T+i)->parent==0)
+		{
+			if((T+i)->weight<(T+min)->weight)
+			{
+				min=i;
+			}
+		}
+	}
+	*s1=min;
+	for(i=1;i<=k;i++)//初始化 （第二次） 
+	{
+		if((T+i)->parent==0 && i != *s1)
+		{
+			min=i;
+			break;
+		}
+	}
+	for(i=1;i<=k;i++)//s2 
+	{
+		if((T+i)->parent==0 && i != *s1)
+		{
+			if((T+i)->weight<(T+min)->weight)
+			{
+				min=i;
+			}
+		}
+	}
+	*s2=min; 
+	return 1;
+}
