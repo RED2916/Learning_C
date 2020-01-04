@@ -8,7 +8,7 @@
 typedef struct{
 	int weight;
 	int parent,lchild,rchild; 
-}HFMTREE;//注意，加入"*"形势可以让结构体可以数组化！
+}HFMTREE;//注意，加入"*"形势可以让结构体可以数组化！//不加也行
 typedef char** HFMCODING;//无法识别?
 
 int selectmin(HFMTREE* T,int k,int* s1,int* s2 );
