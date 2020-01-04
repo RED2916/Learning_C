@@ -1,0 +1,96 @@
+// 2.cpp : 定义控制台应用程序的入口点。
+//
+
+#include "stdafx.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
+
+#define INFINITY 32767
+#define MAX_VERTEX_NUM 20
+
+/*typedef struct ArcCell{
+	int adj;//顶点类型？权或邻接
+	int IncInfo;//信息？
+}ArcCell,Adjmatrix[MAX_VERTEX_NUM][MAX_VERTEX_NUM];*/
+typedef struct{
+	char vexs[MAX_VERTEX_NUM];
+	int arcs[MAX_VERTEX_NUM][MAX_VERTEX_NUM];
+	int vexnum,arcnum;
+}G_MX;
+
+int CreateUDM(G_MX *G);
+void DispG(G_MX G);
+
+int main( void )
+{
+	G_MX* G;
+	G=(G_MX *)malloc( sizeof(G_MX) );
+	CreateUDM(G);
+	DispG(*G);
+	system("pause");
+	return 0;
+}
+
+int CreateUDM(G_MX *G)
+{
+	int n,e_num,input_r,input_col,input_w,i,j;
+	printf("请输入顶点数和边数：\n");
+	scanf("%d;%d",&n,&e_num);
+	G->vexnum=n;
+	G->arcnum=e_num;
+	for( i=0;i<n;i++)//初始化
+	{
+		fflush(stdin);//清空缓冲区
+		for( j=0;j<n;j++ )
+		{
+			if( i==j )
+			{
+				G->arcs[i][j]=0;
+			}
+			else
+			{
+				G->arcs[i][j]=INFINITY;
+			} 
+		}
+		printf("请输入第%d个顶点的信息:",i);
+		scanf("%c",&G->vexs[i]);
+	}
+	printf("\n");
+	for( i=0;i<G->arcnum;i++ )
+	{
+		printf("请输入边的信息:");
+		scanf("%d;%d;%d",&input_r,&input_col,&input_w);
+		G->arcs[input_r-1][input_col-1]=input_w;//注意无向图对称！
+		G->arcs[input_col-1][input_r-1]=input_w;
+	}
+	return 1;
+}
+void DispG(G_MX G)
+{
+	int i,j;
+	printf("\n");
+	printf("顶点信息:\n");
+	printf("\t");
+	for(i=0;i<G.vexnum;i++)
+	{
+		printf("%C\t",G.vexs[i]);
+	}
+	printf("\n");
+	for( i=0;i<G.vexnum;i++ )
+	{
+		printf("%C\t",G.vexs[i]);
+		for( j=0;j<G.vexnum;j++ )
+		{
+			if( G.arcs[i][j]!=INFINITY )
+			{
+				printf("%d\t",G.arcs[i][j]);
+			}
+			else
+			{
+				printf("%s\t","N");
+			}
+		}
+		printf("\n");
+	}
+}
