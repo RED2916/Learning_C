@@ -1,0 +1,117 @@
+// MyDFS.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+//
+
+#include <iostream>
+
+#define MAXSPACE 13
+
+using namespace std;
+
+int tree[13][13] = {
+		{1, 1, 2, 3},{2, 4, 5},{3, 6},{4, 7, 8},{5, 9, 10},{6},{7, 11},{8},{9, 12},{10},{11},{12},{13}
+};
+
+int tree_colour[MAXSPACE];//0：while 1：grey 2：black
+int output[MAXSPACE];
+int point = 0;
+//The function and struct of stack
+struct Mystack {
+	int content[MAXSPACE];
+	int stack_head = 0;
+};
+
+Mystack stack;//The public stack of whole algorithm
+
+int disp_stack(Mystack* stack);
+int pop_stack(Mystack* stack);
+int push_stack(Mystack* stack, int input);
+
+int MyDFS(int tree[][13]);
+int MyDFSvisit(int input[], int index);
+
+int main()
+{
+	//Mystack stack = { {1,2,3},2 };
+	int i;
+	MyDFS(tree);
+	cout << "output:";
+	for (i = 0; i < MAXSPACE; i++) {
+		//cout << output[i] << " ";
+		cout << output[i]+1 << " ";
+	}
+	cout << endl;
+}
+
+int MyDFS(int tree[][13]) {
+	int i;
+	for (i = 0; i < MAXSPACE; i++) {
+		if (tree_colour[i] == 0) {
+			MyDFSvisit(tree[i], i);
+		}
+	}
+	return 1;
+}
+
+int MyDFSvisit(int input[], int index) {
+	int i = 1;
+	int temp;
+	push_stack(&stack, index);
+	disp_stack(&stack);
+	while (input[i] != 0) {
+		temp = input[i];//可能是多余的，仅是用于易读性
+		if (tree_colour[temp] == 0) {
+			MyDFSvisit(tree[temp], input[i]);
+		}
+		i++;
+	}
+	pop_stack(&stack);
+	disp_stack(&stack);
+	return 1;
+}
+
+
+
+
+
+int disp_stack(Mystack* stack) {
+	int i;
+	if (stack->stack_head <= 0) {
+		cout << "stack is empty" << endl;
+		return 0;
+	}
+	cout << "stack_content:";
+	//for (i = 0; i <= stack->stack_head; i++) {
+	for (i = 1; i <= stack->stack_head; i++) {
+		//cout << stack->content[i] << " ";
+		cout << stack->content[i]+1 << " ";//adapt the index of exam
+	}
+	cout << endl;
+	return 1;
+}
+
+int pop_stack(Mystack* stack) {
+	int temp;
+	if (stack->stack_head <= 0) {
+		return -1;
+	}
+	temp = stack->stack_head--;
+	tree_colour[stack->content[temp]] = 2;//turn black
+	output[point] = stack->content[temp];
+	point++;
+	//cout << "pop: " << stack->content[temp] << endl;
+	return stack->content[temp];
+}
+
+
+int push_stack(Mystack* stack, int input) {
+	stack->stack_head++;//move the stack head
+	if (stack->stack_head >= MAXSPACE) {
+		stack->stack_head--;
+		return -1;
+	}
+	stack->content[stack->stack_head] = input;
+	//cout << "push: " << input << endl;
+	tree_colour[input] = 1;//turn grey
+	
+	return stack->stack_head;
+}
