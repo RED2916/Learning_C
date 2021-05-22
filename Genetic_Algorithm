@@ -147,7 +147,7 @@ int CrossOver( Chromosome(&pop)[POP_NUM] ) {
 	for (i = 0; i < GEN_NUM; i = i + 2) {//交叉
 		position = rand() % (GEN_NUM - 1);
 		cout << "交换位置:" << position << endl;
-		strncpy(temp, pop[i].gene + position, GEN_NUM - position);
+		strncpy(temp, pop[i].gene + position, GEN_NUM - position);//C++中此函数有警报
 		strncpy(pop[i].gene + position, pop[i+1].gene + position, GEN_NUM - position);
 		strncpy(pop[i + 1].gene + position, temp, GEN_NUM - position);
 		temp[GEN_NUM] = '\0';
