@@ -1,0 +1,193 @@
+#include <iostream>
+#include <ctime>
+#include <string>
+#include <cmath>
+
+#define POP_NUM 4 //族群数
+#define GEN_NUM 4 //基因位数
+#define ITE_NUM 1000 //迭代次数
+#define CRO_RATE 0.5 //交叉率
+#define MUT_RATE 0.1 //变异率
+
+#pragma warning(disable : 4996)
+
+using namespace std;
+
+class Chromosome {
+public:
+	char gene[GEN_NUM + 1];
+	int fitvalue;
+};
+
+int CreatePOP(Chromosome(&pop)[POP_NUM]);
+int To_decimal(char input[GEN_NUM + 1]);
+int Caculate_fit(int i);
+int Print_chromo(Chromosome(&pop)[POP_NUM]);
+int UpadatePop(Chromosome(&old_pop)[POP_NUM], Chromosome(new_pop)[POP_NUM]);
+int SelectPop(Chromosome(&pop)[POP_NUM]);
+int CrossOver(Chromosome(&pop)[POP_NUM]);
+int Mutation(Chromosome(&pop)[POP_NUM]);
+
+int main(void) {
+	Chromosome pop[POP_NUM];
+	Chromosome next_pop[POP_NUM];
+	int i;
+	srand((int)time(NULL));
+	CreatePOP(pop);
+	for (i = 0; i < ITE_NUM; i++) {
+		UpadatePop(next_pop, pop);
+		SelectPop(next_pop);
+		CrossOver(next_pop);
+		Mutation(next_pop);
+		UpadatePop(pop,next_pop);
+	}
+	return 0;
+}
+
+//创建初始族群
+int CreatePOP(Chromosome (&pop)[POP_NUM]) {
+	int i, j;
+	int input;
+	int value;
+	for (i = 0; i < POP_NUM; i++) {
+		for (j = GEN_NUM - 1; j >= 0; j--) {
+			input = rand() % 2;
+			pop[i].gene[j] = '0' + input;
+		}
+		pop[i].gene[GEN_NUM] = '\0';
+		value = To_decimal(pop[i].gene);
+		pop[i].fitvalue = Caculate_fit(value);
+	}
+	Print_chromo(pop);
+	return 0;
+}
+
+int To_decimal(char input[GEN_NUM+1]) {
+	int i;
+	int output = 0;
+	for (i = GEN_NUM-1; i >=0 ;i--) {
+		//cout << input;
+		output += (input[i]-'0')*((int)pow(2,3-i));
+	}
+	return output;
+}
+
+int Caculate_fit(int i) {
+	int output;
+	output = i * 15 - ((int)pow(i, 2));
+	return output;
+}
+
+int Print_chromo(Chromosome (&pop)[POP_NUM]) {
+	int i,j;
+	cout << "族群：" << endl;
+	for (i = 0; i < POP_NUM; i++) {
+		cout << "个体" << i << ": " << "\0"+(string)pop[i].gene  << "\t值：" << pop[i].fitvalue << endl;
+
+	}
+	return 0;
+}
+
+
+//更新备份
+int UpadatePop(Chromosome (&old_pop)[POP_NUM], Chromosome (new_pop)[POP_NUM] ){
+	int i;
+	for (i = 0; i < POP_NUM; i++) {
+		old_pop[i] = new_pop[i];
+	}
+	return 0;
+}
+
+//选择
+int SelectPop(Chromosome (&pop)[POP_NUM]) {
+	int i, j;
+	Chromosome temp;
+	int SUM_FIT = 0;
+	int rand_num = 0;
+	double ChoicePos[POP_NUM];
+	for (i = GEN_NUM; i >0; i--) {
+		for (j = 0; j < i-1; j++) {
+			if ( pop[j].fitvalue< pop[j+1].fitvalue) {
+				temp = pop[j + 1];
+				pop[j + 1] = pop[j];
+				pop[j] = temp;
+			}
+		}
+	}
+	for (j = 0; j < POP_NUM; j++) {
+		SUM_FIT += pop[j].fitvalue;
+	}
+	for (i = 0; i < POP_NUM; i++) {
+		ChoicePos[i] = (double)pop[i].fitvalue / SUM_FIT;
+		rand_num = rand() % 100;
+		if (rand_num > (int)(ChoicePos[i] * 100) ) {
+			pop[i] = pop[0];//舍弃，换为最优值
+		}
+	}
+	cout << "选择后，族群如下：" << endl;
+	Print_chromo(pop);
+	return 0;
+}
+
+//交叉
+int CrossOver( Chromosome(&pop)[POP_NUM] ) {
+	int rand_num = 0;
+	int i;
+	int position;
+	int value;
+	char temp[GEN_NUM+1]="";
+	rand_num = rand() % 100;
+	if (rand_num >= (CRO_RATE * 100)) {
+		cout << "未进行交叉" << endl;
+		return 1;
+	}
+	cout << "交叉前，族群如下:" << endl;
+	Print_chromo(pop);
+	
+	for (i = 0; i < GEN_NUM; i = i + 2) {//交叉
+		position = rand() % (GEN_NUM - 1);
+		cout << "交换位置:" << position << endl;
+		strncpy(temp, pop[i].gene + position, GEN_NUM - position);
+		strncpy(pop[i].gene + position, pop[i+1].gene + position, GEN_NUM - position);
+		strncpy(pop[i + 1].gene + position, temp, GEN_NUM - position);
+		temp[GEN_NUM] = '\0';
+		pop[i].gene[GEN_NUM] = '\0';
+		pop[i + 1].gene[GEN_NUM] = '\0';
+	}
+	for (i = 0; i < GEN_NUM; i++) {
+		value = To_decimal(pop[i].gene);
+		pop[i].fitvalue = Caculate_fit(value);
+	}
+	cout << "交叉后，族群如下:" << endl;
+	Print_chromo(pop);
+	return 0;
+}
+
+//变异
+
+int Mutation(Chromosome (&pop)[POP_NUM]) {
+	int i;
+	int rand_num, randRow, randCol;
+	int value;
+	rand_num = rand() % 100;
+
+	if (rand_num >= (MUT_RATE * 100)) {
+		cout << "未进行变异" << endl;
+		return 1;
+	}
+
+	randRow = rand() % POP_NUM;
+	randCol = rand() % GEN_NUM;
+
+	cout << "变异前，族群如下:" << endl;
+	Print_chromo(pop);
+
+	pop[randRow].gene[randCol] = (pop[randRow].gene[randCol] == '0') ? '1' : '0';
+	pop[randRow].fitvalue=Caculate_fit(To_decimal(pop[randRow].gene));
+
+	cout << "变异后，族群如下:" << endl;
+	Print_chromo(pop);
+
+	return 0;
+	
+}
