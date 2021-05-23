@@ -1,0 +1,367 @@
+#include <iostream>
+#include <ctime>
+#include <string>
+#include <cmath>
+
+#define POP_NUM 4 //族群数
+#define GEN_NUM 6 //基因位数
+#define ITE_NUM 300 //迭代次数
+#define CRO_RATE 0.5 //交叉率
+#define MUT_RATE 0.2 //变异率
+
+#define MAX_PANEL 6
+#define LOC_NUM 15
+#define MAX_PATH 3
+#define MAX_DIS 32767//最远距离
+
+
+//图的邻接表
+int Map[LOC_NUM][MAX_PATH][3] = {
+	{{1,2,3},{1,3,5},{1,8,4}},
+	{{2,11,4},{2,4,9},{2,5,5}},
+	{{3,4,4},{3,5,3},{3,9,5}},
+	{{4,13,2},{4,6,1},{4,7,5}},
+	{{5,6,8},{5,7,4},{5,10,6}},
+	{{6,14,4},{6,12,2}},
+	{{7,14,6},{7,12,9}},
+	{{8,5,1},{8,9,7}},
+	{{9,6,4},{9,7,4},{9,10,2}},
+	{{10,14,7},{10,12,5}},
+	{{11,13,4}},
+	{{12,15,2}},
+	{{13,15,3},{13,14,2}},
+	{{14,15,1}},
+	{}
+};//三维数组中，第一位为路径起点，第二位为路径终点，第三位为开销
+
+typedef struct {
+	int gene[GEN_NUM];
+	int fitValue;
+}Chromosome;
+
+using namespace std;
+
+int stastic_num(int num[MAX_PATH][3]);
+int DepthRandSearch(int sid, int did, int ite_num, Chromosome& pop);
+int CreatePop(int start, int end, Chromosome(&pop)[POP_NUM]);
+int CaculateFit(int start, int chromosome[MAX_PANEL]);
+int UpadatePop(Chromosome(&old_pop)[POP_NUM], Chromosome new_pop[POP_NUM]);
+int SelectPop(int sid, Chromosome(&pop)[POP_NUM]);
+int Print_chromo(int sid, Chromosome(&pop)[POP_NUM]);
+int CrossOver(int sid, Chromosome(&pop)[POP_NUM]);
+int Mutation(int sid, int did, Chromosome(&pop)[POP_NUM]);
+int stastic_node(Chromosome pop);
+int Ave_value(Chromosome pop[POP_NUM], double(&ave)[ITE_NUM], int input);
+
+int main(void) {
+	Chromosome Pop[POP_NUM];
+	Chromosome nextPop[POP_NUM];
+
+	int start = 1;
+	int end = 15;
+	double ave[ITE_NUM];
+	int best[ITE_NUM];
+	int i;
+
+	/*cout << "请输入起点：";
+	cin >> start;
+	cout << "请输入终点：";
+	cin >> end;*/
+
+	//Chromosome temp;
+	//DepthRandSearch(1, 15, temp);
+	//cout << temp.fitValue << endl;
+	//int x = temp.gene[GEN_NUM - 1];
+	//cout << (x == NULL) << endl; //随机数与NULL不等
+	//cout << stastic_node(Pop[0]) << endl;
+
+	srand((int)time(NULL));//产生随机种子
+
+	CreatePop(start, end, Pop);
+	Print_chromo(start, Pop);
+
+	for (i = 0; i < ITE_NUM;i++) {
+		UpadatePop(nextPop,Pop);
+		SelectPop(start, nextPop);
+		Ave_value(Pop, ave, i);
+		best[i] = Pop[0].fitValue;
+		//CrossOver(start, nextPop);
+		Mutation(start, end, nextPop);
+		UpadatePop(Pop,nextPop);
+	}
+	for (i = 0; i < ITE_NUM; i++) {
+		cout << ave[i] << " ";
+	}
+	cout << endl;
+	for (i = 0; i < ITE_NUM; i++) {
+		cout << best[i] << " ";
+	}
+	cout << endl;
+	return 0;
+}
+
+//创建族群
+int CreatePop(int start,int end,Chromosome (&pop)[POP_NUM]) {
+	int i;
+	for (i = 0; i < POP_NUM; i++) {
+		DepthRandSearch(start, end, GEN_NUM ,pop[i]);
+	}
+	return 0;
+}
+
+//随机进行搜索
+int DepthRandSearch(int sid, int did,int ite_num, Chromosome &pop) {
+	int i;
+	int real_sid = sid - 1;
+	int road_num;
+	int choice;
+	int centre;
+	bool flag_find = false;
+
+	centre = real_sid;
+
+	
+
+	pop.fitValue = 0;//初始化
+
+	for (i = 0; i < ite_num; i++) {
+		road_num = stastic_num(Map[centre]);
+		if (road_num == 0) {
+			pop.gene[i] = 0;//0即为不通
+			pop.fitValue = MAX_DIS;//标记为不可达
+			break;
+		}
+		choice = rand() % road_num;
+		pop.gene[i] = Map[centre][choice][1];
+		if (Map[centre][choice][1] == did) {
+			flag_find = true;
+			break;
+		}
+		centre = Map[centre][choice][1] - 1;//改变焦点
+	}
+	if (flag_find == false) {
+		pop.fitValue = MAX_DIS;//标记为不可达
+	}
+	for (i=i+1; i < MAX_PANEL; i++) {//收尾
+		pop.gene[i] = 0;
+	}
+	pop.fitValue = CaculateFit(sid, pop.gene);
+	return 0;
+}
+
+//统计边数
+int stastic_num(int num[MAX_PATH][3]) {
+	int output = 0;
+	int i = 0;
+	int focus = num[0][0];
+	while((num[i][2] != NULL) && (num[i][0]== focus)) {//此处若不判断行是否，使用“0”时改变会超过行去统计整个数组，0会指代整个数组
+		output++;
+		i++;
+	}
+	return output;
+}
+
+//计算适应度
+int CaculateFit(int start,int chromosome[MAX_PANEL]) {
+	int i,j;
+	int begin = start-1,end;//用以记录路径点
+	int road_num=0;
+	int output = 0;
+	for (i = 0; i < MAX_PANEL;i++) {
+		end = chromosome[i];
+		road_num = stastic_num(Map[begin]);
+		if (end == 0 || road_num == 0) {//触0停止
+			break;
+		}
+		for (j = 0; j < road_num; j++) {//找到对应路径
+			if (Map[begin][j][1] == end) {
+				output += Map[begin][j][2];
+				break;
+			}
+		}
+		begin = end - 1;
+	}
+	return output;
+}
+
+//更新族群
+int UpadatePop(Chromosome (&old_pop)[POP_NUM], Chromosome new_pop[POP_NUM]){
+	int i;
+	for (i = 0; i < POP_NUM; i++) {
+		old_pop[i] = new_pop[i];
+	}
+	return 0;
+}
+
+//选择族群
+int SelectPop(int sid,Chromosome (&pop)[POP_NUM]) {
+	int i, j;
+	Chromosome temp;
+	double SUM_FIT = 0;
+	int rand_num = 0;
+	double ChoicePos[POP_NUM];
+	for (i = POP_NUM; i > 0; i--) {
+		for (j = 0; j < i - 1; j++) {
+			if (pop[j].fitValue > pop[j + 1].fitValue) { //升序
+				temp = pop[j + 1];
+				pop[j + 1] = pop[j];
+				pop[j] = temp;
+			}
+		}
+	}
+	for (j = 0; j < POP_NUM; j++) {
+		SUM_FIT += 1/(double)pop[j].fitValue;//取倒数
+	}
+	for (i = 0; i < POP_NUM; i++) {
+		ChoicePos[i] = (1/(double)pop[i].fitValue) / SUM_FIT;
+		rand_num = rand() % 100;
+		if (rand_num > (int)(ChoicePos[i] * 100)) {
+			pop[i] = pop[0];//舍弃，换为最优值
+		}
+	}
+	cout << "选择后，族群如下：" << endl;
+	Print_chromo(sid,pop);
+	return 0;
+}
+
+//打印族群
+int Print_chromo(int sid,Chromosome(&pop)[POP_NUM]) {
+	int i, j;
+	cout << "族群：" << endl;
+	for (i = 0; i < POP_NUM; i++) {
+		cout << "个体" << i << ": ";
+		cout << sid;
+		for (j = 0; j < MAX_PANEL; j++) {
+			if (pop[i].gene[j] == 0) {
+				break;
+			}
+			cout << "->";
+			cout << pop[i].gene[j];
+		}	
+		cout<< "\t值：" << pop[i].fitValue << endl;
+
+	}
+	return 0;
+}
+
+//交叉
+int CrossOver(int sid,Chromosome(&pop)[POP_NUM]) {
+	int rand_num = 0;
+	int i,j;
+	int position;
+	int temp;
+	rand_num = rand() % 100;
+	if (rand_num >= (CRO_RATE * 100)) {
+		cout << "未进行交叉" << endl;
+		return 1;
+	}
+	cout << "交叉前，族群如下:" << endl;
+	Print_chromo(sid,pop);
+
+	for (i = 0; i < POP_NUM; i = i + 2) {//交叉
+		position = rand() % (GEN_NUM - 1);
+		cout << "交换位置:" << position << endl;
+		for (j = position; j < GEN_NUM; j++) {
+			temp = pop[i + 1].gene[j];
+			pop[i + 1].gene[j] = pop[i].gene[j];
+			pop[i].gene[j] = temp;
+		}
+	}
+	for (i = 0; i < POP_NUM; i++) {
+		pop[i].fitValue = CaculateFit(sid,pop[i].gene);
+	}
+	cout << "交叉后，族群如下:" << endl;
+	Print_chromo(sid,pop);
+	return 0;
+}
+
+int Mutation(int sid,int did,Chromosome(&pop)[POP_NUM]) {
+	int i;
+	int j;
+	int rand_pos,rand_num, randRow, randCol;
+	int value;
+	int now_num;
+	int start_old;
+	int node_num,path_num;
+	Chromosome temp;
+
+	rand_pos = rand() % 100;
+
+
+	if (rand_pos <= (MUT_RATE * 100)) {
+		cout << "未进行变异" << endl;
+		return 1;
+	}
+
+	randRow = rand() % POP_NUM;
+	node_num = stastic_node(pop[randRow]);
+
+	randCol = rand() % (node_num-2);//节点数减2，不包括终点
+
+	cout << "变异前，族群如下:" << endl;
+	Print_chromo(sid,pop);
+	
+	now_num= pop[randRow].gene[randCol];//记录路径
+	
+	while (1) {//防止死循环
+		if (randCol == 0) {
+			start_old = 1;
+		}
+		else {
+			start_old = pop[randRow].gene[randCol - 1];//记录原起点
+		}
+		path_num = stastic_num(Map[start_old - 1]);
+		if (path_num != 1) {
+			break;
+		}
+		else {
+			randCol = rand() % (node_num - 2);//节点数减2，不包括终点
+		}
+	}
+
+	while (1) {
+		rand_num = rand() % (stastic_num(Map[start_old-1]));//注意减一！！
+		if (Map[start_old-1][rand_num][1] != now_num) {
+			break;
+		}
+	}
+	DepthRandSearch(start_old, did, GEN_NUM-randCol,temp);
+	for (i = randCol,j=0; i < GEN_NUM; i++,j++) {
+		pop[randRow].gene[i] = temp.gene[j];
+	}
+	if (temp.fitValue != MAX_DIS ) {
+		pop[randRow].fitValue = CaculateFit(sid, pop[randRow].gene);
+	}else {
+		pop[randRow].fitValue = MAX_DIS;
+	}
+	
+
+	cout << "变异后，族群如下:" << endl;
+	Print_chromo(sid,pop);
+
+	return 0;
+
+}
+
+//统计节点
+int stastic_node(Chromosome pop) {
+	int i = 0;
+	int output = 0;
+	while (pop.gene[i] != 0) {
+		i++;
+		output++;
+	}
+	return output;
+}
+
+int Ave_value(Chromosome pop[POP_NUM], double(&ave)[ITE_NUM], int input) {
+	int i;
+	double ave_input;
+	int SUM = 0;
+	for (i = 0; i < POP_NUM; i++) {
+		SUM += pop[i].fitValue;
+	}
+	ave_input = ((double)SUM) / POP_NUM;
+	ave[input] = ave_input;
+	return 0;
+}
